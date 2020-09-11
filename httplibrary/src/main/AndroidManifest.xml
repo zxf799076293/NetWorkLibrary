@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.linhuiba.httplibrary">
+    <application>
+        <activity android:name=".httpServre.NetMainActivity">
+        </activity>
+    </application>
+</manifest>
