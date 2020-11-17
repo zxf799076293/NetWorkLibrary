@@ -48,6 +48,12 @@ public abstract class BaseObserver<T> implements Observer<BaseEntity<T>> {
     private static final int SERVER_ERROR_CODE = 500;
     private static final String TOKEN_ERROR_MSG = "登录失效";
     public static final int TOKEN_ERROR_CODE = -99;
+    public static final int OUT_OF_SERVICE_ERROR_CODE = -1000;//企业账号已停用 联系客服
+    public static final String OUT_OF_SERVICE_ERROR_MSG = "企业目前处于停用状态，请联系客服";//企业目前处于停用状态，请联系客服
+    public static final int OUT_OF_SERVICE_AUTHORIZATION_ERROR_CODE = -1006;//企业账号已停用 上传授权书
+    public static final int AUTHORIZATION_ERROR_CODE = -2001;//请完成企业认证
+    public static final int AUTHORIZATION_INFO_ERROR_CODE = -2002;//请补全企业信息完成企业认证
+
     private static final int NOT_FOUND_ERROR_CODE = -999;//后台没有返回code 自定义code
     private static final int CONNECT_ERROR_CODE = -998;//网络连接失败code
     public BaseObserver(Context cxt) {
@@ -139,7 +145,16 @@ public abstract class BaseObserver<T> implements Observer<BaseEntity<T>> {
         } else if (e instanceof ApiException) {
             try {
                 if (((ApiException) e).getCode() == TOKEN_ERROR_CODE) {
-                    tokenFailure();
+                    tokenFailure(TOKEN_ERROR_CODE);
+                } else if (((ApiException) e).getCode() == OUT_OF_SERVICE_ERROR_CODE
+                        && ((ApiException) e).getMsg().indexOf(OUT_OF_SERVICE_ERROR_MSG) != -1) {
+                    tokenFailure(OUT_OF_SERVICE_ERROR_CODE);
+                } else if (((ApiException) e).getCode() == OUT_OF_SERVICE_AUTHORIZATION_ERROR_CODE) {
+                    tokenFailure(OUT_OF_SERVICE_AUTHORIZATION_ERROR_CODE);
+                } else if (((ApiException) e).getCode() == AUTHORIZATION_ERROR_CODE) {
+                    tokenFailure(AUTHORIZATION_ERROR_CODE);
+                } else if (((ApiException) e).getCode() == AUTHORIZATION_INFO_ERROR_CODE) {
+                    tokenFailure(AUTHORIZATION_INFO_ERROR_CODE);
                 } else {
                     failure((ApiException)e, getErrorMsg(((ApiException) e).getMsg()));
                 }
@@ -312,9 +327,9 @@ public abstract class BaseObserver<T> implements Observer<BaseEntity<T>> {
     /**
      * 失去token后的操作 可以根据具体要求重写此方法
      */
-    protected void tokenFailure()  {
+    protected void tokenFailure(int code)  {
         try {
-            ApiException throwable = new ApiException("", TOKEN_ERROR_CODE);
+            ApiException throwable = new ApiException("", code);
             failure(throwable, "");
         } catch (Exception e) {
             e.printStackTrace();

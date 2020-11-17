@@ -49,7 +49,6 @@ public class HttpHeaderInterceptor implements Interceptor {
         authorization.header("Authorization", "Bearer " + token);
         authorization.header("x-client", "android");
         authorization.header("x-client-version", "1");
-
         //动态添加Header
         if (null != heads) {
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
@@ -74,18 +73,27 @@ public class HttpHeaderInterceptor implements Interceptor {
         }
         //接口的baseUrl替换
         if (baseUrl.length() > 0) {
-            //baseurl 动态设置
-            HttpUrl newBaseUrl = HttpUrl.parse(baseUrl);
             //从request中获取原有的HttpUrl实例oldHttpUrl
             HttpUrl oldHttpUrl = originalRequest.url();
+            //baseurl 动态设置
+            HttpUrl newBaseUrl = HttpUrl.parse(baseUrl);
             //重建新的HttpUrl，修改需要修改的url部分
-            HttpUrl newFullUrl = oldHttpUrl
-                    .newBuilder()
-                    .scheme(newBaseUrl.scheme())
-                    .host(newBaseUrl.host())
-                    .port(newBaseUrl.port())
-                    .removePathSegment(0)//删除多余的path
-                    .build();
+            HttpUrl newFullUrl;
+
+            if (baseUrl.equals("https://api.linhuiba.com/prs/api/")) {
+                newFullUrl = oldHttpUrl
+                        .newBuilder()
+                        .setEncodedPathSegment(0, "prs/api")
+                        .build();
+            } else {
+                newFullUrl = oldHttpUrl
+                        .newBuilder()
+                        .scheme(newBaseUrl.scheme())
+                        .host(newBaseUrl.host())
+                        .port(newBaseUrl.port())
+                        .removePathSegment(0)//删除多余的path
+                        .build();
+            }
             //重建这个request，通过builder.url(newFullUrl).build()；
             return chain.proceed(authorization.url(newFullUrl).build());
         } else {

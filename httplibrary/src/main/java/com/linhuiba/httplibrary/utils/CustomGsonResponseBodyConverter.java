@@ -41,7 +41,10 @@ public class CustomGsonResponseBodyConverter<T> implements Converter<ResponseBod
     public T convert(ResponseBody value) throws IOException {
         String response = value.string();
         BaseEntity<Object> httpStatus = gson.fromJson(response, BaseEntity.class);
-        if (!httpStatus.isSuccess() && (httpStatus.getResult() == null || httpStatus.getResult().toString().length() == 0)) {
+        if (!httpStatus.isSuccess() && (httpStatus.getResult() == null || httpStatus.getResult().toString().length() == 0
+                || httpStatus.getResult().toString().equals("{}") || httpStatus.getResult().toString().equals("[]")
+                || (httpStatus.getResult().toString().indexOf("{") != 0
+                && httpStatus.getResult().toString().indexOf("[") != 0))) {
             value.close();
             throw new ApiException(httpStatus.getMsg() != null ? httpStatus.getMsg().toString() : "", httpStatus.getCode());
         }
